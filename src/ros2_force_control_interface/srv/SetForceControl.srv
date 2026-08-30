@@ -1,0 +1,12 @@
+# Configure the force loop without requiring an action goal.
+bool enable
+float64 target_normal_force
+float64 force_tolerance
+float64 max_normal_velocity
+bool reset_integrator
+string controller_mode
+---
+bool accepted
+string message
+float64 active_target_normal_force
+uint8 active_mode

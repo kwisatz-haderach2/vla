@@ -1,0 +1,10 @@
+# Enable/disable Cartesian compliance around the paper normal.
+bool enable
+float64 normal_stiffness
+float64 tangential_stiffness
+float64 damping
+float64 max_displacement
+---
+bool accepted
+string message
+bool active

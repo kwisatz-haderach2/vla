@@ -1,0 +1,4 @@
+string image_path
+---
+bool success
+string message

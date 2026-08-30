@@ -1,0 +1,25 @@
+# Catkin workspace outputs
+/build/
+/devel/
+/install/
+/logs/
+/.catkin_tools/
+
+# Codex/session metadata
+/.agents/
+/.codex/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# ROS/Gazebo runtime files
+*.log
+*.bag
+.ros/
+
+# Editor and OS metadata
+.vscode/
+.idea/
+.DS_Store
+*~

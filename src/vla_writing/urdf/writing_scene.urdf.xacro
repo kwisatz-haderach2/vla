@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!-- Keep the official UR5e semantic description name so the upstream
+     ur5e_moveit_config can be reused without a generated-SRDF mismatch. -->
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur5e_robot">
+  <!--
+    UR5e + fixed writing end-effector.
+
+    This file intentionally uses the official ROS-Industrial ``ur_gazebo``
+    macro (from the noetic-devel universal_robot repository) with the UR5e
+    parameter set.  Keeping the model name and parameter files explicit makes
+    accidental fallback to another robot variant easy to spot in logs.
+  -->
+  <xacro:arg name="prefix" default=""/>
+  <xacro:arg name="joint_limits_parameters_file"
+             default="$(find vla_writing)/config/ur5e_writing_joint_limits.yaml"/>
+  <xacro:arg name="kinematics_parameters_file"
+             default="$(find ur_description)/config/ur5e/default_kinematics.yaml"/>
+  <xacro:arg name="physical_parameters_file"
+             default="$(find ur_description)/config/ur5e/physical_parameters.yaml"/>
+  <xacro:arg name="visual_parameters_file"
+             default="$(find ur_description)/config/ur5e/visual_parameters.yaml"/>
+  <xacro:arg name="transmission_hw_interface"
+             default="hardware_interface/PositionJointInterface"/>
+  <xacro:arg name="safety_limits" default="false"/>
+  <xacro:arg name="safety_pos_margin" default="0.15"/>
+  <xacro:arg name="safety_k_position" default="20"/>
+  <xacro:arg name="pen_length" default="0.16"/>
+  <xacro:arg name="pen_radius" default="0.006"/>
+
+  <xacro:include filename="$(find ur_gazebo)/urdf/ur_macro.xacro"/>
+  <xacro:include filename="$(find vla_writing)/urdf/gripper_pen.xacro"/>
+
+  <!-- The macro below is the generic Gazebo wrapper instantiated with the
+       UR5e parameter files above.  Those files carry the model-specific DH
+       and visual parameters. -->
+  <xacro:ur_robot_gazebo
+      prefix="$(arg prefix)"
+      joint_limits_parameters_file="$(arg joint_limits_parameters_file)"
+      kinematics_parameters_file="$(arg kinematics_parameters_file)"
+      physical_parameters_file="$(arg physical_parameters_file)"
+      visual_parameters_file="$(arg visual_parameters_file)"
+      transmission_hw_interface="$(arg transmission_hw_interface)"
+      safety_limits="$(arg safety_limits)"
+      safety_pos_margin="$(arg safety_pos_margin)"
+      safety_k_position="$(arg safety_k_position)"/>
+
+  <xacro:writing_gripper_pen
+      parent="$(arg prefix)tool0"
+      prefix="$(arg prefix)"
+      pen_length="$(arg pen_length)"
+      pen_radius="$(arg pen_radius)"/>
+</robot>

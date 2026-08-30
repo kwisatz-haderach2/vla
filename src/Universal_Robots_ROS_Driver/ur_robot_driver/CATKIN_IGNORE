@@ -1,0 +1,3 @@
+# The physical-robot driver requires industrial_robot_status_interface, which
+# is not needed by the Gazebo UR5e simulation.  Keep the official source in
+# this workspace but skip this optional package in the one-day demo build.

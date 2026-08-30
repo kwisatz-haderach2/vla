@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<!-- Semantic model for the UR5e + fixed writing tool.
+     This is intentionally local to vla_writing: the upstream UR5e SRDF ends
+     the manipulator at tool0, while our Cartesian targets are defined at the
+     actual pen_tip. -->
+<robot name="ur5e_robot">
+  <group name="manipulator">
+    <chain base_link="base_link" tip_link="pen_tip" />
+  </group>
+
+  <group_state name="home" group="manipulator">
+    <joint name="elbow_joint" value="0" />
+    <joint name="shoulder_lift_joint" value="0" />
+    <joint name="shoulder_pan_joint" value="0" />
+    <joint name="wrist_1_joint" value="0" />
+    <joint name="wrist_2_joint" value="0" />
+    <joint name="wrist_3_joint" value="0" />
+  </group_state>
+  <group_state name="up" group="manipulator">
+    <joint name="elbow_joint" value="0" />
+    <joint name="shoulder_lift_joint" value="-1.5707" />
+    <joint name="shoulder_pan_joint" value="0" />
+    <joint name="wrist_1_joint" value="-1.5707" />
+    <joint name="wrist_2_joint" value="0" />
+    <joint name="wrist_3_joint" value="0" />
+  </group_state>
+
+  <virtual_joint name="fixed_base" type="fixed" parent_frame="world" child_link="base_link" />
+
+  <!-- UR links are adjacent and intentionally overlap at some fixed-joint
+       boundaries.  The two added writing links need the same treatment. -->
+  <disable_collisions link1="base_link_inertia" link2="shoulder_link" reason="Adjacent" />
+  <disable_collisions link1="base_link_inertia" link2="upper_arm_link" reason="Never" />
+  <disable_collisions link1="base_link_inertia" link2="wrist_1_link" reason="Never" />
+  <disable_collisions link1="forearm_link" link2="upper_arm_link" reason="Adjacent" />
+  <disable_collisions link1="forearm_link" link2="wrist_1_link" reason="Adjacent" />
+  <disable_collisions link1="shoulder_link" link2="upper_arm_link" reason="Adjacent" />
+  <disable_collisions link1="shoulder_link" link2="wrist_1_link" reason="Never" />
+  <disable_collisions link1="shoulder_link" link2="wrist_2_link" reason="Never" />
+  <disable_collisions link1="wrist_1_link" link2="wrist_2_link" reason="Adjacent" />
+  <disable_collisions link1="wrist_1_link" link2="wrist_3_link" reason="Never" />
+  <disable_collisions link1="wrist_2_link" link2="wrist_3_link" reason="Adjacent" />
+  <disable_collisions link1="tool0" link2="gripper_mount_link" reason="Adjacent" />
+  <disable_collisions link1="wrist_3_link" link2="flange" reason="Adjacent" />
+  <disable_collisions link1="wrist_3_link" link2="tool0" reason="Adjacent" />
+  <disable_collisions link1="wrist_3_link" link2="gripper_mount_link" reason="Adjacent" />
+  <disable_collisions link1="wrist_3_link" link2="gripper_palm_link" reason="Adjacent" />
+  <disable_collisions link1="flange" link2="tool0" reason="Adjacent" />
+  <disable_collisions link1="flange" link2="gripper_mount_link" reason="Adjacent" />
+  <disable_collisions link1="flange" link2="gripper_palm_link" reason="Adjacent" />
+  <disable_collisions link1="gripper_mount_link" link2="gripper_palm_link" reason="Adjacent" />
+  <disable_collisions link1="gripper_palm_link" link2="gripper_left_finger_link" reason="Adjacent" />
+  <disable_collisions link1="gripper_palm_link" link2="gripper_right_finger_link" reason="Adjacent" />
+  <disable_collisions link1="gripper_palm_link" link2="pen_link" reason="Adjacent" />
+  <disable_collisions link1="pen_link" link2="pen_tip" reason="Adjacent" />
+  <!-- The fixed pen tip is deliberately allowed to approach the sheet. -->
+  <disable_collisions link1="gripper_left_finger_link" link2="pen_link" reason="Never" />
+  <disable_collisions link1="gripper_right_finger_link" link2="pen_link" reason="Never" />
+</robot>

@@ -1,0 +1,68 @@
+# Joint limits used by the writing demo.
+#
+# The upstream UR5e description permits +/-360 degrees on several revolute
+# joints.  In a Cartesian writing task that wide interval lets the IK solver
+# choose an equivalent 2*pi/4*pi branch; Gazebo then publishes an unwrapped
+# angle and the next MoveIt request sees an invalid start state.  The writing
+# scene uses a conservative, physically sufficient branch (approximately
+# +/-180 degrees for all six joints, with a little extra wrist-1 clearance).
+# This keeps repeated English/Hanzi/image requests deterministic.  The official
+# wider limits remain available to the optional force-control branch by passing
+# its own joint-limits file to the xacro.
+joint_limits:
+  shoulder_pan:
+    has_acceleration_limits: false
+    has_effort_limits: true
+    has_position_limits: true
+    has_velocity_limits: true
+    max_effort: 150.0
+    max_position: 3.141592653589793
+    max_velocity: 3.141592653589793
+    min_position: -3.141592653589793
+  shoulder_lift:
+    has_acceleration_limits: false
+    has_effort_limits: true
+    has_position_limits: true
+    has_velocity_limits: true
+    max_effort: 150.0
+    max_position: 3.141592653589793
+    max_velocity: 3.141592653589793
+    min_position: -3.141592653589793
+  elbow_joint:
+    has_acceleration_limits: false
+    has_effort_limits: true
+    has_position_limits: true
+    has_velocity_limits: true
+    max_effort: 150.0
+    max_position: 3.141592653589793
+    max_velocity: 3.141592653589793
+    min_position: -3.141592653589793
+  wrist_1:
+    has_acceleration_limits: false
+    has_effort_limits: true
+    has_position_limits: true
+    has_velocity_limits: true
+    max_effort: 28.0
+    # The writing orientation places wrist_1 just below -pi; retain a small
+    # margin but keep the interval well below a full extra revolution.
+    max_position: 3.5
+    max_velocity: 3.141592653589793
+    min_position: -3.5
+  wrist_2:
+    has_acceleration_limits: false
+    has_effort_limits: true
+    has_position_limits: true
+    has_velocity_limits: true
+    max_effort: 28.0
+    max_position: 3.141592653589793
+    max_velocity: 3.141592653589793
+    min_position: -3.141592653589793
+  wrist_3:
+    has_acceleration_limits: false
+    has_effort_limits: true
+    has_position_limits: true
+    has_velocity_limits: true
+    max_effort: 28.0
+    max_position: 3.141592653589793
+    max_velocity: 3.141592653589793
+    min_position: -3.141592653589793

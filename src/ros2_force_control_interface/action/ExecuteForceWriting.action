@@ -1,0 +1,13 @@
+# Execute Cartesian waypoints while a force controller owns the normal axis.
+ros2_force_control_interface/ForceTrajectory trajectory
+---
+bool success
+string message
+uint32 executed_waypoints
+float64 distance_written
+---
+uint32 current_waypoint
+float32 progress
+float64 normal_force
+float64 force_error
+bool in_contact

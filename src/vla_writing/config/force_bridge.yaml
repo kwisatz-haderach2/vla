@@ -1,0 +1,27 @@
+# Stable ROS 1 <-> ROS 2/ros1_bridge contract.  The ROS 1 planner publishes
+# targets and consumes contact state; the teammate's ROS 2 controller owns the
+# normal-axis loop.  All names are absolute on purpose.
+force_bridge:
+  pen_pose_topic: /vla/pen_pose
+  command_topic: /vla/force_command
+  target_wrench_topic: /vla/force_target_wrench
+  measured_wrench_topic: /vla/measured_wrench
+  force_state_topic: /vla/force_state
+  contact_state_topic: /vla/contact_state
+  ros1_target_force_topic: /vla/force_target
+  ros1_enable_topic: /vla/force_enable
+  ros1_mode_topic: /vla/force_mode
+  ros1_contact_topic: /vla/pen_contact
+  ros1_measured_wrench_topic: /vla/force_state_wrench
+  bridge_command_wrench_topic: /vla/force_cmd_wrench
+  bridge_target_force_topic: /vla/force_target
+  bridge_enable_topic: /vla/force_enable
+  bridge_mode_topic: /vla/force_mode
+  bridge_measured_wrench_topic: /vla/force_state_wrench
+  bridge_contact_topic: /vla/pen_contact
+  bridge_status_topic: /vla/status
+  frame_id: paper_frame
+  pen_tip_frame: pen_tip
+  paper_normal_axis: z
+  # Set true only when a ros1_bridge instance is running in another terminal.
+  use_ros1_bridge: false

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Custom MoveIt 1 launch because the upstream UR5e config names a real
+       hardware controller (scaled_pos_joint_traj_controller), while this
+       scene uses its stable Gazebo position trajectory controller. -->
+  <arg name="pipeline" default="ompl"/>
+  <arg name="allow_trajectory_execution" default="true"/>
+  <arg name="debug" default="false"/>
+  <arg name="info" default="false"/>
+
+  <include file="$(find ur5e_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="false"/>
+  </include>
+  <!-- Replace the stock semantic model (tip=tool0) with the local UR5e
+       writing model (tip=pen_tip and fixed-tool collision exemptions). -->
+  <param name="robot_description_semantic"
+         textfile="$(find vla_writing)/config/ur5e_writing.srdf" />
+
+  <include ns="move_group" file="$(find ur5e_moveit_config)/launch/planning_pipeline.launch.xml">
+    <arg name="pipeline" value="$(arg pipeline)"/>
+  </include>
+
+  <group ns="move_group">
+    <param name="moveit_manage_controllers" value="false"/>
+    <param name="moveit_controller_manager" value="moveit_simple_controller_manager/MoveItSimpleControllerManager"/>
+    <param name="trajectory_execution/execution_duration_monitoring" value="false"/>
+    <param name="trajectory_execution/allowed_execution_duration_scaling" value="1.5"/>
+    <param name="trajectory_execution/allowed_goal_duration_margin" value="1.0"/>
+    <rosparam file="$(find vla_writing)/config/moveit_controllers.yaml"/>
+  </group>
+
+  <node name="move_group" pkg="moveit_ros_move_group" type="move_group"
+        respawn="false" output="screen">
+    <param name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
+    <param name="capabilities" value=""/>
+    <param name="disable_capabilities" value=""/>
+    <param name="planning_scene_monitor/publish_planning_scene" value="true"/>
+    <param name="planning_scene_monitor/publish_geometry_updates" value="true"/>
+    <param name="planning_scene_monitor/publish_state_updates" value="true"/>
+    <param name="planning_scene_monitor/publish_transforms_updates" value="true"/>
+  </node>
+</launch>

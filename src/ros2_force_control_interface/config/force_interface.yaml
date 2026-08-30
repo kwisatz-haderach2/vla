@@ -1,0 +1,26 @@
+force_control_gateway:
+  ros__parameters:
+    # Custom ROS 2 interfaces.
+    command_topic: /vla/force_command
+    measured_wrench_topic: /vla/measured_wrench
+    force_state_topic: /vla/force_state
+    contact_state_topic: /vla/contact_state
+    target_wrench_topic: /vla/force_target_wrench
+    set_force_service: /vla/set_force_control
+    set_compliance_service: /vla/set_compliance
+
+    # Synchronisation point published by the ROS 1 writing planner.
+    pen_pose_topic: /vla/pen_pose
+    frame_id: paper_frame
+    force_axis: z
+    contact_threshold: 1.0
+    publish_rate: 50.0
+
+    # Standard-message mirrors form the ros1_bridge ABI.
+    bridge_command_wrench_topic: /vla/force_cmd_wrench
+    bridge_target_force_topic: /vla/force_target
+    bridge_enable_topic: /vla/force_enable
+    bridge_mode_topic: /vla/force_mode
+    bridge_measured_wrench_topic: /vla/force_state_wrench
+    bridge_contact_topic: /vla/pen_contact
+    bridge_status_topic: /vla/status

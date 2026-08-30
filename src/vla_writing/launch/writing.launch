@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="false"/>
+  <arg name="enable_rviz" default="true"/>
+  <arg name="start_moveit" default="true"/>
+  <arg name="dry_run" default="false"/>
+  <arg name="show_paper_view" default="true"/>
+  <arg name="start_gazebo" default="true"/>
+
+  <include file="$(find vla_writing)/launch/writing_scene.launch">
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="enable_rviz" value="$(arg enable_rviz)"/>
+    <arg name="start_gazebo" value="$(arg start_gazebo)"/>
+    <arg name="start_pen_monitor" value="true"/>
+    <arg name="start_paper_view" value="$(arg show_paper_view)"/>
+  </include>
+
+  <include if="$(arg start_moveit)" file="$(find vla_writing)/launch/move_group_writing.launch"/>
+
+  <node pkg="vla_writing" type="writing_node.py" name="writing_node" output="screen">
+    <param name="dry_run" value="$(arg dry_run)"/>
+  </node>
+</launch>

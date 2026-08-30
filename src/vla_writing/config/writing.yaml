@@ -1,0 +1,96 @@
+# Central configuration for the ROS1 writing demo.  SI units (metres/radians).
+paper:
+  width: 0.420
+  height: 0.297
+  # paper_frame is the top-left corner of the sheet.  Its +x axis points
+  # right along the page and its +y axis points toward the top edge; logical
+  # v (down the page) is therefore represented by -y in paper_frame.
+  frame: paper_frame
+  origin:
+    x: 0.180
+    y: 0.200
+    z: 0.517
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+
+layout:
+  margin_left: 0.020
+  margin_top: 0.020
+  margin_right: 0.020
+  margin_bottom: 0.020
+  line_spacing_ratio: 0.50
+  # If true, a word which does not fit starts on the next line.
+  wrap_words: true
+
+english:
+  char_width: 0.025
+  char_height: 0.040
+  letter_spacing_ratio: 0.50
+  word_spacing_ratio: 1.00
+  font_file: data/ascii_single_line.json
+
+chinese:
+  char_width: 0.040
+  char_height: 0.040
+  spacing_ratio: 0.50
+  graphics_file: data/hanzi/graphics.txt
+
+motion:
+  write_z: 0.0015
+  lift_z: 0.030
+  point_spacing: 0.002
+  eef_step: 0.003
+  velocity_scaling: 0.10
+  acceleration_scaling: 0.10
+  planning_time: 8.0
+  ready_timeout: 20.0
+  # Gazebo's first trajectory sample can be stale immediately after startup;
+  # move_to_ready_pose verifies the final joints when the controller reports
+  # a transient path-tolerance warning.
+  ready_settle_time: 0.8
+  ready_joint_tolerance: 0.30
+  # Keep the orientation acquired at the ready pose unless explicitly set.
+  orientation: [0.0, 0.0, 0.0, 1.0]
+
+moveit:
+  planning_group: manipulator
+  base_frame: base_link
+  eef_link: pen_tip
+  fallback_eef_link: tool0
+  cartesian_fraction_required: 0.98
+  planner_id: RRTConnectkConfigDefault
+  table_collision_name: writing_table
+  # Keep only a thin tabletop proxy in MoveIt.  The full SDF table (legs and
+  # shelf) remains visible in Gazebo; this proxy avoids falsely colliding with
+  # the arm while still preventing the links from passing through the surface.
+  table_dimensions: [0.90, 0.70, 0.050]
+  # base_link is spawned at world z=0.10; the tabletop top is world z=0.517.
+  # Put the proxy top 4 mm below the paper to leave clearance for pen_tip.
+  table_pose: [0.54, 0.0515, 0.388]
+
+ink:
+  contact_threshold: 0.003
+  z_offset: 0.0005
+  min_point_distance: 0.001
+  material: Gazebo/Black
+
+opencv:
+  width: 840
+  height: 594
+  thickness: 3
+  window_name: paper_snapshot
+  show_window: true
+  save_path: /tmp/vla_paper_snapshot.png
+
+image:
+  min_contour_length: 30.0
+  min_contour_area: 4.0
+  simplify_epsilon_ratio: 0.003
+  max_dimension: 0.24
+
+scene:
+  robot_model: ur5e_writing
+  world_file: worlds/writing.world
+  use_ink_plugin: true
+  use_moveit: true

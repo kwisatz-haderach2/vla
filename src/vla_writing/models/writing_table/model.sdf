@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="writing_table">
+    <static>true</static>
+
+    <!-- A 0.9 m x 0.70 m work surface; top face is z=0.517 m so the
+         4-mm paper rests flush with it. -->
+    <link name="table_top">
+      <pose>0 0 0.487 0 0 0</pose>
+      <collision name="collision">
+        <geometry><box><size>0.90 0.70 0.06</size></box></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><box><size>0.90 0.70 0.06</size></box></geometry>
+        <material>
+          <ambient>0.20 0.11 0.055 1</ambient>
+          <diffuse>0.48 0.27 0.12 1</diffuse>
+          <specular>0.12 0.08 0.04 1</specular>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Four square legs.  They are separate links because a static SDF model
+         does not need joints; this keeps the model simple and robust in Gazebo. -->
+    <link name="leg_front_left">
+      <pose>-0.37 -0.27 0.23 0 0 0</pose>
+      <collision name="collision"><geometry><box><size>0.07 0.07 0.46</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>0.07 0.07 0.46</size></box></geometry><material><ambient>0.16 0.08 0.03 1</ambient><diffuse>0.36 0.18 0.06 1</diffuse></material></visual>
+    </link>
+    <link name="leg_front_right">
+      <pose>0.37 -0.27 0.23 0 0 0</pose>
+      <collision name="collision"><geometry><box><size>0.07 0.07 0.46</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>0.07 0.07 0.46</size></box></geometry><material><ambient>0.16 0.08 0.03 1</ambient><diffuse>0.36 0.18 0.06 1</diffuse></material></visual>
+    </link>
+    <link name="leg_back_left">
+      <pose>-0.37 0.27 0.23 0 0 0</pose>
+      <collision name="collision"><geometry><box><size>0.07 0.07 0.46</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>0.07 0.07 0.46</size></box></geometry><material><ambient>0.16 0.08 0.03 1</ambient><diffuse>0.36 0.18 0.06 1</diffuse></material></visual>
+    </link>
+    <link name="leg_back_right">
+      <pose>0.37 0.27 0.23 0 0 0</pose>
+      <collision name="collision"><geometry><box><size>0.07 0.07 0.46</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>0.07 0.07 0.46</size></box></geometry><material><ambient>0.16 0.08 0.03 1</ambient><diffuse>0.36 0.18 0.06 1</diffuse></material></visual>
+    </link>
+
+    <!-- A thin lower shelf improves the scene silhouette without interfering
+         with the arm's writing workspace. -->
+    <link name="lower_shelf">
+      <pose>0 0 0.12 0 0 0</pose>
+      <collision name="collision"><geometry><box><size>0.70 0.48 0.025</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>0.70 0.48 0.025</size></box></geometry><material><ambient>0.12 0.06 0.02 1</ambient><diffuse>0.28 0.13 0.04 1</diffuse></material></visual>
+    </link>
+  </model>
+</sdf>

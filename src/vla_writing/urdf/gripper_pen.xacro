@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+  <!--
+    Lightweight, simulation-friendly end effector for the writing demo.
+
+    The upstream UR description deliberately stops at ``tool0``.  This macro
+    adds a fixed two-finger gripper and a replaceable pen.  The fingers are
+    fixed in the ROS 1/Gazebo demo so that no extra controller is required;
+    their geometry still gives a clear visual indication of the gripper and
+    leaves a stable attachment point for a future gripper controller.
+
+    ``pen_tip`` is the contract frame used by the writing nodes and by the
+    optional ink renderer.  The pen axis follows tool0 +Y in the official
+    UR5e ``up`` pose, keeping the nib normal to the horizontal paper.
+  -->
+  <xacro:macro name="writing_gripper_pen" params="
+      parent
+      prefix:=''
+      pen_length:=0.16
+      pen_radius:=0.006
+      pen_tip_radius:=0.004">
+
+    <!-- Mount and palm -->
+    <link name="${prefix}gripper_mount_link">
+      <visual>
+        <origin xyz="0 0 0.015" rpy="0 0 0"/>
+        <geometry><cylinder radius="0.035" length="0.03"/></geometry>
+        <material name="gripper_dark"><color rgba="0.12 0.14 0.16 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0.015" rpy="0 0 0"/>
+        <geometry><cylinder radius="0.035" length="0.03"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 0.015" rpy="0 0 0"/>
+        <mass value="0.08"/>
+        <inertia ixx="0.00002" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.00002"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}tool0-gripper_mount" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}gripper_mount_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${prefix}gripper_palm_link">
+      <visual>
+        <origin xyz="0 0 0.0475" rpy="0 0 0"/>
+        <geometry><box size="0.10 0.075 0.025"/></geometry>
+        <material name="gripper_body"><color rgba="0.30 0.32 0.35 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0.0475" rpy="0 0 0"/>
+        <geometry><box size="0.10 0.075 0.025"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 0.0475" rpy="0 0 0"/>
+        <mass value="0.12"/>
+        <inertia ixx="0.00008" ixy="0" ixz="0" iyy="0.00012" iyz="0" izz="0.00012"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}gripper_mount-palm" type="fixed">
+      <parent link="${prefix}gripper_mount_link"/>
+      <child link="${prefix}gripper_palm_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Fixed fingers: visually a parallel gripper, no controller required. -->
+    <link name="${prefix}gripper_left_finger_link">
+      <visual>
+        <origin xyz="0.033 0 0.095" rpy="0 0 0"/>
+        <geometry><box size="0.018 0.028 0.095"/></geometry>
+        <material name="finger_metal"><color rgba="0.55 0.57 0.60 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="0.033 0 0.095" rpy="0 0 0"/>
+        <geometry><box size="0.018 0.028 0.095"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0.033 0 0.095" rpy="0 0 0"/>
+        <mass value="0.03"/>
+        <inertia ixx="0.00003" ixy="0" ixz="0" iyy="0.00003" iyz="0" izz="0.000002"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}palm-left_finger" type="fixed">
+      <parent link="${prefix}gripper_palm_link"/>
+      <child link="${prefix}gripper_left_finger_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${prefix}gripper_right_finger_link">
+      <visual>
+        <origin xyz="-0.033 0 0.095" rpy="0 0 0"/>
+        <geometry><box size="0.018 0.028 0.095"/></geometry>
+        <material name="finger_metal"><color rgba="0.55 0.57 0.60 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="-0.033 0 0.095" rpy="0 0 0"/>
+        <geometry><box size="0.018 0.028 0.095"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="-0.033 0 0.095" rpy="0 0 0"/>
+        <mass value="0.03"/>
+        <inertia ixx="0.00003" ixy="0" ixz="0" iyy="0.00003" iyz="0" izz="0.000002"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}palm-right_finger" type="fixed">
+      <parent link="${prefix}gripper_palm_link"/>
+      <child link="${prefix}gripper_right_finger_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- A black barrel and a small nib.  In the official UR5e ``up`` state
+         tool0 +Y points down toward the table, so the pen axis is +Y (a
+         cylinder's native +Z axis is rotated by -90 degrees around X).
+         ``pen_tip`` is the exact writing point. -->
+    <link name="${prefix}pen_link">
+      <visual>
+        <origin xyz="0 ${0.045 + pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
+        <geometry><cylinder radius="${pen_radius}" length="${pen_length}"/></geometry>
+        <material name="pen_body"><color rgba="0.03 0.03 0.04 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="0 ${0.045 + pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
+        <geometry><cylinder radius="${pen_radius}" length="${pen_length}"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 ${0.045 + pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
+        <mass value="0.025"/>
+        <inertia ixx="0.00005" ixy="0" ixz="0" iyy="0.00005" iyz="0" izz="0.000001"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}palm-pen" type="fixed">
+      <parent link="${prefix}gripper_palm_link"/>
+      <child link="${prefix}pen_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${prefix}pen_tip">
+      <!-- Keep this visual name stable: the Gazebo ink visual plugin locates
+           the actual pen tip by searching for ``pen_tip_visual``. -->
+      <visual name="pen_tip_visual">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry><sphere radius="${pen_tip_radius}"/></geometry>
+        <material name="ink_black"><color rgba="0.01 0.01 0.01 1.0"/></material>
+      </visual>
+      <collision name="pen_tip_collision">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry><sphere radius="${pen_tip_radius}"/></geometry>
+        <surface>
+          <friction><ode mu="0.8" mu2="0.8"/></friction>
+          <contact><ode kp="1000000" kd="10"/></contact>
+        </surface>
+      </collision>
+      <inertial>
+        <mass value="0.002"/>
+        <inertia ixx="0.00000001" ixy="0" ixz="0" iyy="0.00000001" iyz="0" izz="0.00000001"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}pen-pen_tip" type="fixed">
+      <parent link="${prefix}pen_link"/>
+      <child link="${prefix}pen_tip"/>
+        <origin xyz="0 ${0.045 + pen_length} 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Gazebo-only properties.  ``pen_tip`` is deliberately a real collision
+         link, so a future contact/force plugin can subscribe without changing
+         the robot description. -->
+    <gazebo reference="${prefix}gripper_mount_link">
+      <material>Gazebo/DarkGrey</material>
+      <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="${prefix}gripper_palm_link">
+      <material>Gazebo/Grey</material>
+      <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="${prefix}gripper_left_finger_link">
+      <material>Gazebo/LightGrey</material>
+      <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="${prefix}gripper_right_finger_link">
+      <material>Gazebo/LightGrey</material>
+      <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="${prefix}pen_link">
+      <material>Gazebo/Black</material>
+      <selfCollide>false</selfCollide>
+      <gravity>false</gravity>
+    </gazebo>
+    <gazebo reference="${prefix}pen_tip">
+      <material>Gazebo/Black</material>
+      <selfCollide>false</selfCollide>
+      <gravity>false</gravity>
+    </gazebo>
+  </xacro:macro>
+</robot>

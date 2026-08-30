@@ -1,0 +1,16 @@
+# MoveIt Simple Controller Manager contract for the Gazebo position trajectory
+# controller started by writing_scene.launch.
+controller_list:
+  # writing_scene.launch starts this position trajectory controller by
+  # default.  The effort controller remains available for the force-control
+  # hand-off, but must not run concurrently on the same joints.
+  - name: pos_joint_traj_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
