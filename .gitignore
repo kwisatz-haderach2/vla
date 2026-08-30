@@ -18,6 +18,10 @@ __pycache__/
 *.bag
 .ros/
 
+# Generated TF graph diagnostics
+/frames.gv
+/frames.pdf
+
 # Editor and OS metadata
 .vscode/
 .idea/

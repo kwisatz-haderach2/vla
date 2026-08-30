@@ -25,8 +25,24 @@ camera.  The camera publishes:
 /vla/paper_camera/camera_info
 ```
 
-Set `enable_rviz:=true` to open a matching RViz view.  `simulation.launch` and
+Set `enable_rviz:=true` to open a matching RViz view.  The launch also starts
+`scene_markers.py`, which mirrors the Gazebo SDF table, paper and camera as an
+RViz `MarkerArray` on `/vla/scene_markers`.  `simulation.launch` and
 `demo.launch` are short aliases for video/demo scripts.
+
+Run only one copy of this launch at a time.  Before restarting, stop the old
+Gazebo/RViz window with `Ctrl+C` and wait until all child processes report
+`finished cleanly`; otherwise Gazebo reports `entity already exists` and RViz
+will have no `/clock` or `/joint_states` to follow.
+
+The UR5e base is fixed to the tabletop at world `(0.05, -0.20, 0.517)` m.
+The default writing pose is held by `scene_initializer.py`; its six joints are
+`[0.054, -1.006, 2.2644, 1.8833, -0.054, 0.0016]` in the order
+`[shoulder_pan, shoulder_lift, elbow, wrist_1, wrist_2, wrist_3]`.  The pen
+tip is approximately `(0.390, 0.051, 0.575)` m and points vertically down to
+the sheet.  The gripper palm is parallel to the tabletop, the fixed finger
+gap is 12 mm, and the pen barrel starts at the palm's lower face so it cannot
+appear detached at close camera zoom.
 
 `move_group_writing.launch` overlays `config/ur5e_writing.srdf` on the upstream
 UR5e planning context.  Its `manipulator` chain ends at `pen_tip` (not
@@ -90,3 +106,4 @@ the `List[Stroke]` trajectory interface.
   anchor (`ink_anchor_visual`).
 * `models/paper_camera` — 800 x 600 Gazebo camera aimed at the sheet.
 * `worlds/writing.world` — lighting, ground and model placement.
+* `scripts/scene_markers.py` — RViz markers for the non-URDF Gazebo models.

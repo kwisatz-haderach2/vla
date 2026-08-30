@@ -10,7 +10,8 @@
     fixed gripper/pen.  The table, paper and camera are regular SDF models in
     worlds/writing.world.  Set enable_rviz:=true for a second RViz view.
   -->
-  <arg name="paused" default="false"/>
+  <!-- Keep physics paused until the fixed-base startup pose is installed. -->
+  <arg name="paused" default="true"/>
   <arg name="gui" default="true"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="start_gazebo" default="true"/>
@@ -18,9 +19,16 @@
   <arg name="robot_xacro" default="$(find vla_writing)/urdf/writing_scene.urdf.xacro"/>
   <arg name="robot_name" default="ur5e_writing"/>
   <arg name="prefix" default=""/>
-  <arg name="spawn_x" default="-0.15"/>
-  <arg name="spawn_y" default="0.00"/>
-  <arg name="spawn_z" default="0.10"/>
+  <!-- The base is on the floor in front/left of the table.  The values are
+       passed into the URDF world_joint below; the Gazebo model itself is
+       spawned at the world origin so the pose is not applied twice. -->
+  <!-- Place the UR5e base on the tabletop (table top z=0.517 m). -->
+  <arg name="spawn_x" default="0.05"/>
+  <arg name="spawn_y" default="-0.20"/>
+  <arg name="spawn_z" default="0.517"/>
+  <arg name="spawn_roll" default="0.0"/>
+  <arg name="spawn_pitch" default="0.0"/>
+  <arg name="spawn_yaw" default="0.0"/>
   <arg name="tf_prefix" default=""/>
   <arg name="robot_base_frame" default="base_link"/>
   <!-- Position control is the stable default for the writing/video branch.
@@ -29,18 +37,33 @@
        and controllers:=\"joint_state_controller eff_joint_traj_controller\"
        when handing control to that branch. -->
   <arg name="controllers" default="joint_state_controller pos_joint_traj_controller"/>
+  <arg name="trajectory_controller" default="pos_joint_traj_controller"/>
+  <arg name="auto_initialize_pose" default="true"/>
+  <arg name="auto_unpause" default="true"/>
   <arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
-  <arg name="initial_joint_positions" default="-J shoulder_pan_joint 0.0 -J shoulder_lift_joint -1.57 -J elbow_joint 1.57 -J wrist_1_joint -1.57 -J wrist_2_joint -1.57 -J wrist_3_joint 0.0"/>
+  <!-- The initial-joint argument is retained as a documented launch API, but
+       it is deliberately not passed to spawn_model.  spawn_model performs a
+       delayed internal ``-J`` service call after reporting the model as
+       spawned; that call races the deterministic scene_initializer and can
+       overwrite the writing pose with zeros.  The initializer is the single
+       owner of the startup joint configuration. -->
+  <!-- Writing-ready, pen-down orientation over the paper centre.  The
+       position controller is started only after Gazebo has spawned the model;
+       the launch also verifies this state with a post-spawn configuration
+       helper, so it is not silently replaced by the all-zero controller
+       default. -->
+  <arg name="initial_joint_positions" default="-J shoulder_pan_joint 0.05400 -J shoulder_lift_joint -1.00600 -J elbow_joint 2.26440 -J wrist_1_joint 1.88330 -J wrist_2_joint -0.05400 -J wrist_3_joint 0.00160"/>
   <arg name="enable_rviz" default="false"/>
   <arg name="rviz_config" default="$(find vla_writing)/rviz/writing_scene.rviz"/>
   <arg name="start_pen_monitor" default="true"/>
+  <arg name="start_scene_markers" default="true"/>
   <arg name="start_paper_view" default="false"/>
   <arg name="writing_config" default="$(find vla_writing)/config/writing.yaml"/>
 
   <!-- These are the top-left paper_frame coordinates from config/writing.yaml. -->
   <arg name="paper_origin_x" default="0.180"/>
   <arg name="paper_origin_y" default="0.200"/>
-  <arg name="paper_origin_z" default="0.517"/>
+  <arg name="paper_origin_z" default="0.521"/>
   <arg name="paper_frame" default="paper_frame"/>
   <arg name="world_frame" default="world"/>
 
@@ -64,7 +87,7 @@
   <!-- Expand the URDF before spawning Gazebo.  ``xacro`` is on PATH after
        sourcing /opt/ros/noetic/setup.bash (the normal Noetic workflow). -->
   <param name="robot_description"
-         command="xacro --inorder '$(arg robot_xacro)' prefix:=$(arg prefix) transmission_hw_interface:=$(arg transmission_hw_interface)"/>
+         command="xacro --inorder '$(arg robot_xacro)' prefix:=$(arg prefix) transmission_hw_interface:=$(arg transmission_hw_interface) base_x:=$(arg spawn_x) base_y:=$(arg spawn_y) base_z:=$(arg spawn_z) base_roll:=$(arg spawn_roll) base_pitch:=$(arg spawn_pitch) base_yaw:=$(arg spawn_yaw)"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch" if="$(arg start_gazebo)">
     <arg name="world_name" value="$(arg world_file)"/>
@@ -79,25 +102,36 @@
   </node>
 
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_ur5e_writing" output="screen"
-        args="-urdf -param robot_description -model $(arg robot_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z) $(arg initial_joint_positions)"/>
+        args="-urdf -param robot_description -model $(arg robot_name) -x 0 -y 0 -z 0"/>
 
-  <!-- ros_control exposes the position trajectory interface used by the
-       writing/video branch.  The effort controller is kept in the same YAML
-       for the optional force-control hand-off, but is not spawned here. -->
+  <!-- Load the state controller immediately, but keep the trajectory
+       controller stopped until scene_initializer has written the initial
+       joint configuration.  Starting it at zero was the reason the arm
+       previously moved into the table even when spawn_model received -J. -->
   <rosparam file="$(find vla_writing)/config/ur5e_writing_controllers.yaml" command="load"/>
-  <node pkg="controller_manager" type="spawner" name="writing_controller_spawner"
-        output="screen" args="$(arg controllers)" respawn="false"/>
+  <node pkg="controller_manager" type="spawner" name="joint_state_controller_spawner"
+        output="screen" args="joint_state_controller" respawn="false"/>
+  <node pkg="controller_manager" type="spawner" name="trajectory_controller_loader"
+        output="screen" args="--stopped $(arg trajectory_controller)" respawn="false"/>
+
+  <node if="$(arg auto_initialize_pose)" pkg="vla_writing" type="scene_initializer.py"
+        name="scene_initializer" output="screen" respawn="false">
+    <param name="model_name" value="$(arg robot_name)"/>
+    <param name="trajectory_controller" value="$(arg trajectory_controller)"/>
+    <param name="command_topic" value="/$(arg trajectory_controller)/command"/>
+    <param name="unpause" value="$(arg auto_unpause)"/>
+    <rosparam param="joint_names">[shoulder_pan_joint, shoulder_lift_joint, elbow_joint, wrist_1_joint, wrist_2_joint, wrist_3_joint]</rosparam>
+    <rosparam param="joint_positions">[0.05400, -1.00600, 2.26440, 1.88330, -0.05400, 0.00160]</rosparam>
+  </node>
 
   <!-- paper_frame origin is the physical top-left of the sheet.  Logical
        layout coordinates use x=u and y=-v in this frame. -->
   <node pkg="tf" type="static_transform_publisher" name="paper_frame_broadcaster"
         args="$(arg paper_origin_x) $(arg paper_origin_y) $(arg paper_origin_z) 0 0 0 $(arg world_frame) $(arg paper_frame) 100"/>
 
-  <!-- Gazebo's spawned URDF has no world link in the robot_state_publisher
-       tree.  Publish the known spawn pose so MoveIt can transform
-       base_link↔paper_frame and RViz can display both in one tree. -->
-  <node pkg="tf" type="static_transform_publisher" name="world_robot_base_broadcaster"
-        args="$(arg spawn_x) $(arg spawn_y) $(arg spawn_z) 0 0 0 $(arg world_frame) $(arg robot_base_frame) 100"/>
+  <!-- world_joint in writing_scene.urdf.xacro is the single source of truth
+       for world->base_link.  Do not publish a second static transform here:
+       duplicate TF authorities were one cause of the apparent tilted arm. -->
 
   <!-- The Gazebo camera looks along +X and is pitched down by +90 degrees. -->
   <node pkg="tf" type="static_transform_publisher" name="paper_camera_frame_broadcaster"
@@ -112,6 +146,8 @@
         name="pen_monitor" output="screen">
     <param name="config" value="$(arg writing_config)"/>
   </node>
+  <node if="$(arg start_scene_markers)" pkg="vla_writing" type="scene_markers.py"
+        name="scene_markers" output="screen" respawn="false"/>
   <node if="$(arg start_paper_view)" pkg="vla_writing" type="paper_view.py"
         name="paper_view" output="screen">
     <param name="config" value="$(arg writing_config)"/>

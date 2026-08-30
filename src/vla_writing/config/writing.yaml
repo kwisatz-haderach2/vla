@@ -9,7 +9,8 @@ paper:
   origin:
     x: 0.180
     y: 0.200
-    z: 0.517
+    # Visible top surface of the 4-mm paper (table top is z=0.517).
+    z: 0.521
     roll: 0.0
     pitch: 0.0
     yaw: 0.0
@@ -65,9 +66,11 @@ moveit:
   # shelf) remains visible in Gazebo; this proxy avoids falsely colliding with
   # the arm while still preventing the links from passing through the surface.
   table_dimensions: [0.90, 0.70, 0.050]
-  # base_link is spawned at world z=0.10; the tabletop top is world z=0.517.
-  # Put the proxy top 4 mm below the paper to leave clearance for pen_tip.
-  table_pose: [0.54, 0.0515, 0.388]
+  # The robot base is fixed on the tabletop at world (0.05, -0.20, 0.517),
+  # so this collision proxy is expressed in base_link coordinates.  Its top
+  # is at z=0 (the table surface); the paper writing plane is z=0.004 above
+  # the base frame.
+  table_pose: [0.34, 0.2515, -0.025]
 
 ink:
   contact_threshold: 0.003

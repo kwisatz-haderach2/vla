@@ -4,10 +4,10 @@ project(vla_writing)
 add_compile_options(-std=c++11 -Wall -Wextra -Wpedantic)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp rospy std_msgs geometry_msgs trajectory_msgs
+  roscpp rospy std_msgs std_srvs geometry_msgs trajectory_msgs
   tf tf2_ros tf2_geometry_msgs moveit_commander moveit_msgs
   sensor_msgs image_transport cv_bridge gazebo_ros gazebo_msgs
-  controller_manager controller_manager_msgs message_generation
+  controller_manager controller_manager_msgs visualization_msgs message_generation
 )
 find_package(gazebo REQUIRED)
 
@@ -22,10 +22,10 @@ generate_messages(DEPENDENCIES std_msgs)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ink_visual_plugin
-  CATKIN_DEPENDS roscpp rospy std_msgs geometry_msgs trajectory_msgs tf tf2_ros
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs geometry_msgs trajectory_msgs tf tf2_ros
     tf2_geometry_msgs moveit_commander moveit_msgs sensor_msgs image_transport
     cv_bridge gazebo_ros gazebo_msgs controller_manager message_runtime
-    controller_manager_msgs
+    controller_manager_msgs visualization_msgs
   DEPENDS gazebo
 )
 
@@ -39,7 +39,8 @@ target_link_libraries(ink_visual_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 catkin_install_python(PROGRAMS
   scripts/writing_node.py scripts/pen_monitor.py
-  scripts/paper_view.py scripts/write_cli.py
+  scripts/paper_view.py scripts/write_cli.py scripts/scene_initializer.py
+  scripts/scene_markers.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(TARGETS ink_visual_plugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})

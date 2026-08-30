@@ -16,6 +16,9 @@ cd vla_ws
 source /opt/ros/noetic/setup.bash
 catkin build
 source devel/setup.bash
-roslaunch vla_writing writing_scene.launch
+roslaunch vla_writing writing.launch
 ```
 
+`writing.launch` starts Gazebo, the UR5e scene, MoveIt and the writing
+service.  Use `roslaunch vla_writing writing_scene.launch` when you only need
+the simulation scene without MoveIt or the text/image service.

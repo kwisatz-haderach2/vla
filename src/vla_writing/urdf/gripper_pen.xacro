@@ -18,21 +18,48 @@
       prefix:=''
       pen_length:=0.16
       pen_radius:=0.006
-      pen_tip_radius:=0.004">
+      pen_tip_radius:=0.004
+      finger_width:=0.012
+      finger_length:=0.095
+      pen_mount_offset:=0.030">
 
-    <!-- Mount and palm -->
+    <!-- The fixed jaw gap is derived from the pen diameter.  With the
+         defaults, each 12-mm finger is centred at +/-12 mm, so its inner
+         face is at +/-6 mm and the 12-mm pen is exactly centred between them. -->
+    <xacro:property name="pen_diameter" value="${2.0 * pen_radius}"/>
+    <xacro:property name="finger_gap" value="${pen_diameter}"/>
+    <xacro:property name="finger_center_offset"
+                     value="${0.5 * (finger_gap + finger_width)}"/>
+    <!-- The jaw centre coincides with the pen's one-quarter-from-top point:
+         the fixed pen starts at pen_mount_offset and the quarter point is
+         pen_length/4 farther along its +Y writing axis. -->
+    <xacro:property name="jaw_center_y"
+                     value="${pen_mount_offset + pen_length/4.0}"/>
+
+    <!-- Mount and palm.
+
+         The official UR5e tool0 frame is not the same as a conventional
+         "gripper Z-up" frame.  In the writing pose used by this package,
+         tool0 +Y points down toward the sheet, while tool0 +X/+Z span the
+         horizontal tabletop.  The palm is therefore built in the X-Z plane
+         (normal to +Y), and the two fingers extend in +Y.  This keeps the
+         complete gripper parallel to the tabletop while the pen remains
+         vertical, instead of making a vertical plate which only appears to
+         be attached to the wrist in Gazebo.
+    -->
     <link name="${prefix}gripper_mount_link">
       <visual>
-        <origin xyz="0 0 0.015" rpy="0 0 0"/>
+        <!-- Cylinder axis is tool0 +Y (the pen axis). -->
+        <origin xyz="0 0.015 0" rpy="1.57079632679 0 0"/>
         <geometry><cylinder radius="0.035" length="0.03"/></geometry>
         <material name="gripper_dark"><color rgba="0.12 0.14 0.16 1.0"/></material>
       </visual>
       <collision>
-        <origin xyz="0 0 0.015" rpy="0 0 0"/>
+        <origin xyz="0 0.015 0" rpy="1.57079632679 0 0"/>
         <geometry><cylinder radius="0.035" length="0.03"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0 0 0.015" rpy="0 0 0"/>
+        <origin xyz="0 0.015 0" rpy="0 0 0"/>
         <mass value="0.08"/>
         <inertia ixx="0.00002" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.00002"/>
       </inertial>
@@ -45,16 +72,17 @@
 
     <link name="${prefix}gripper_palm_link">
       <visual>
-        <origin xyz="0 0 0.0475" rpy="0 0 0"/>
-        <geometry><box size="0.10 0.075 0.025"/></geometry>
+        <!-- X-Z plane, parallel to the tabletop. -->
+        <origin xyz="0 0.015 0" rpy="0 0 0"/>
+        <geometry><box size="0.10 0.030 0.075"/></geometry>
         <material name="gripper_body"><color rgba="0.30 0.32 0.35 1.0"/></material>
       </visual>
       <collision>
-        <origin xyz="0 0 0.0475" rpy="0 0 0"/>
-        <geometry><box size="0.10 0.075 0.025"/></geometry>
+        <origin xyz="0 0.015 0" rpy="0 0 0"/>
+        <geometry><box size="0.10 0.030 0.075"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0 0 0.0475" rpy="0 0 0"/>
+        <origin xyz="0 0.015 0" rpy="0 0 0"/>
         <mass value="0.12"/>
         <inertia ixx="0.00008" ixy="0" ixz="0" iyy="0.00012" iyz="0" izz="0.00012"/>
       </inertial>
@@ -65,19 +93,30 @@
       <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
 
-    <!-- Fixed fingers: visually a parallel gripper, no controller required. -->
+    <!-- Fixed fingers: visually a parallel gripper, no controller required.
+         They extend down along +Y, i.e. the same direction as the pen.  The
+         opposing X faces leave exactly one pen diameter between them. -->
     <link name="${prefix}gripper_left_finger_link">
       <visual>
-        <origin xyz="0.033 0 0.095" rpy="0 0 0"/>
-        <geometry><box size="0.018 0.028 0.095"/></geometry>
+        <origin xyz="${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} ${finger_length} 0.025"/></geometry>
         <material name="finger_metal"><color rgba="0.55 0.57 0.60 1.0"/></material>
       </visual>
+      <visual name="left_jaw_pad">
+        <origin xyz="${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} 0.024 0.032"/></geometry>
+        <material name="jaw_rubber"><color rgba="0.08 0.08 0.08 1.0"/></material>
+      </visual>
       <collision>
-        <origin xyz="0.033 0 0.095" rpy="0 0 0"/>
-        <geometry><box size="0.018 0.028 0.095"/></geometry>
+        <origin xyz="${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} ${finger_length} 0.025"/></geometry>
+      </collision>
+      <collision name="left_jaw_pad_collision">
+        <origin xyz="${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} 0.024 0.032"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0.033 0 0.095" rpy="0 0 0"/>
+        <origin xyz="${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
         <mass value="0.03"/>
         <inertia ixx="0.00003" ixy="0" ixz="0" iyy="0.00003" iyz="0" izz="0.000002"/>
       </inertial>
@@ -90,16 +129,25 @@
 
     <link name="${prefix}gripper_right_finger_link">
       <visual>
-        <origin xyz="-0.033 0 0.095" rpy="0 0 0"/>
-        <geometry><box size="0.018 0.028 0.095"/></geometry>
+        <origin xyz="-${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} ${finger_length} 0.025"/></geometry>
         <material name="finger_metal"><color rgba="0.55 0.57 0.60 1.0"/></material>
       </visual>
+      <visual name="right_jaw_pad">
+        <origin xyz="-${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} 0.024 0.032"/></geometry>
+        <material name="jaw_rubber"><color rgba="0.08 0.08 0.08 1.0"/></material>
+      </visual>
       <collision>
-        <origin xyz="-0.033 0 0.095" rpy="0 0 0"/>
-        <geometry><box size="0.018 0.028 0.095"/></geometry>
+        <origin xyz="-${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} ${finger_length} 0.025"/></geometry>
+      </collision>
+      <collision name="right_jaw_pad_collision">
+        <origin xyz="-${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
+        <geometry><box size="${finger_width} 0.024 0.032"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="-0.033 0 0.095" rpy="0 0 0"/>
+        <origin xyz="-${finger_center_offset} ${jaw_center_y} 0" rpy="0 0 0"/>
         <mass value="0.03"/>
         <inertia ixx="0.00003" ixy="0" ixz="0" iyy="0.00003" iyz="0" izz="0.000002"/>
       </inertial>
@@ -116,16 +164,28 @@
          ``pen_tip`` is the exact writing point. -->
     <link name="${prefix}pen_link">
       <visual>
-        <origin xyz="0 ${0.045 + pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
+        <origin xyz="0 ${pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
         <geometry><cylinder radius="${pen_radius}" length="${pen_length}"/></geometry>
         <material name="pen_body"><color rgba="0.03 0.03 0.04 1.0"/></material>
       </visual>
+      <!-- Short collar overlaps the lower face of the palm and the top of the
+           barrel.  It makes the fixed mechanical attachment unambiguous in
+           Gazebo and prevents the pen from looking detached at camera zoom. -->
+      <visual name="pen_grip_collar">
+        <origin xyz="0 ${pen_mount_offset - 0.006} 0" rpy="-1.57079632679 0 0"/>
+        <geometry><cylinder radius="${pen_radius * 1.5}" length="0.012"/></geometry>
+        <material name="pen_collar"><color rgba="0.16 0.17 0.18 1.0"/></material>
+      </visual>
       <collision>
-        <origin xyz="0 ${0.045 + pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
+        <origin xyz="0 ${pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
         <geometry><cylinder radius="${pen_radius}" length="${pen_length}"/></geometry>
       </collision>
+      <collision name="pen_grip_collar_collision">
+        <origin xyz="0 ${pen_mount_offset - 0.006} 0" rpy="-1.57079632679 0 0"/>
+        <geometry><cylinder radius="${pen_radius * 1.5}" length="0.012"/></geometry>
+      </collision>
       <inertial>
-        <origin xyz="0 ${0.045 + pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
+        <origin xyz="0 ${pen_length/2.0} 0" rpy="-1.57079632679 0 0"/>
         <mass value="0.025"/>
         <inertia ixx="0.00005" ixy="0" ixz="0" iyy="0.00005" iyz="0" izz="0.000001"/>
       </inertial>
@@ -133,7 +193,9 @@
     <joint name="${prefix}palm-pen" type="fixed">
       <parent link="${prefix}gripper_palm_link"/>
       <child link="${prefix}pen_link"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <!-- Explicit fixed mechanical mount from the gripper palm to the
+           beginning of the pen barrel. -->
+      <origin xyz="0 ${pen_mount_offset} 0" rpy="0 0 0"/>
     </joint>
 
     <link name="${prefix}pen_tip">
@@ -160,7 +222,7 @@
     <joint name="${prefix}pen-pen_tip" type="fixed">
       <parent link="${prefix}pen_link"/>
       <child link="${prefix}pen_tip"/>
-        <origin xyz="0 ${0.045 + pen_length} 0" rpy="0 0 0"/>
+        <origin xyz="0 ${pen_length} 0" rpy="0 0 0"/>
     </joint>
 
     <!-- Gazebo-only properties.  ``pen_tip`` is deliberately a real collision

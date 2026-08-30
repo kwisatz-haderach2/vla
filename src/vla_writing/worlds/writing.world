@@ -49,14 +49,15 @@
     </model>
 
     <!-- The table centre is aligned under the paper at (0.39, 0.0515) m;
-         its top face is z=0.50 m. -->
+         its top face is z=0.517 m.  The paper lower face rests on this
+         surface and its visible top is z=0.521 m. -->
     <include>
       <uri>model://writing_table</uri>
       <name>writing_table</name>
       <pose>0.39 0.0515 0 0 0 0</pose>
     </include>
-    <!-- The paper model's origin is its top-left corner (the exact
-         paper_frame translation from config/writing.yaml). -->
+    <!-- The paper model's origin is its top-left corner in X/Y; its link pose
+         supplies the physical 4-mm thickness above the table. -->
     <include>
       <uri>model://writing_paper</uri>
       <name>writing_paper</name>
